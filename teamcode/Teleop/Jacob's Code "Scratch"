@@ -14,15 +14,15 @@ import com.qualcomm.robotcore.util.Range;
 import static org.firstinspires.ftc.robotcore.internal.opmode.OnBotJavaManager.initialize;
 
 @TeleOp(name = "Scratch")
-@Disabled
+
 
 public class Scratch extends LinearOpMode {
 
-    private DcMotor rightMotor, leftMotor, grabber;
+    private DcMotor rightMotor, leftMotor, grabber = null;
     private CRServo rack, winch;
 
     // controller state values
-    float[] values = {
+    double[] values = {
             0,  //0 Left Stick
             0,  //1 Right Stick
             0,  //2 Left Trigger
@@ -53,14 +53,15 @@ public class Scratch extends LinearOpMode {
 
         // name motors
         rightMotor = hardwareMap.dcMotor.get("right");  // rightMotor named (right)
+        rightMotor.setDirection(DcMotor.Direction.REVERSE);  // reverse direction of right motor
         leftMotor = hardwareMap.dcMotor.get("left");   // leftMotor named (left)
-        grabber = hardwareMap.dcMotor.get("grabber");   // end effector motor named (grabber)
+        //grabber = hardwareMap.dcMotor.get("grabber");   // end effector motor named (grabber)
         rightMotor.setPower(0);
         leftMotor.setPower(0);
-        grabber.setPower(0);
+        //grabber.setPower(0);
 
         // name servos
-        winch = hardwareMap.crservo.get("winch");
+        //winch = hardwareMap.crservo.get("winch");
         rack = hardwareMap.crservo.get("rack");
 
 
@@ -83,7 +84,7 @@ public class Scratch extends LinearOpMode {
     }
 
     // Converts booleans to floats (true = 1, false = 0)
-    public float convertBoolean(boolean x){
+    public double convertBoolean(boolean x){
         if(x)
             return 1;
         else
@@ -92,20 +93,20 @@ public class Scratch extends LinearOpMode {
 
     public void setRobotState() {
         // Prep for setting motor powers (left, right)
-        float left = 0;
-        float right = 0;
+        double left = 0;
+        double right = 0;
 
         // if turning right
         if (values[0] > 0.1) {
             // if right trigger pressed then subtract turning ratio from adjacent side
-            if (values[3] > 0.1) {
+            if (values[3] > 0.5) {
                 right = values[3] - Math.abs(values[0]);
                 left = values[3];
             } else
                 // if left trigger pressed
                 if (values[2] > 0.1) {
-                    right = values[2] - Math.abs(values[0]);
-                    left = values[2];
+                    right = -values[2] + Math.abs(values[0]);
+                    left = -values[2];
                 } else {
                 // if turning in place
                     left = Math.abs(values[0]);
@@ -113,7 +114,7 @@ public class Scratch extends LinearOpMode {
                 }
         }
         // if turning left
-        if (values[0] < 0.1) {
+        if (values[0] < -0.1) {
             // if right trigger pressed then subtract turning ratio from adjacent side
             if (values[3] > 0.1) {
                 left = values[3] - Math.abs(values[0]);
@@ -121,14 +122,33 @@ public class Scratch extends LinearOpMode {
             } else
                 // if left trigger pressed
                 if (values[2] > 0.1) {
-                    left = values[2] - Math.abs(values[0]);
-                    right = values[2];
-                } else {
+                left = -values[2] + Math.abs(values[0]);
+                right = -values[2];
+            } else {
                 // if turning in place
                     right = Math.abs(values[0]);
                     left = -Math.abs(values[0]);
+                    }
+            }
+            // if not turning
+            if ((values[0] < 0.1) && (values[0] > -.1)) {
+                // if pressing both triggers
+                if ((values[2] > 0.1) && (values[3] > 0.1)) {
+                    right = values[3] - values[2];
+                    left = values[3] - values[2];
                 }
-        }
+                // if pressing left trigger
+                if (values[2] > 0.1) {
+                    right = -values[2];
+                    left = -values[2];
+                }
+                // if pressing right trigger
+                if (values[3] > 0.1) {
+                    right = values[3];
+                    left = values[3];
+                }
+            }
+
         // Set motor powers according to current state of joysticks and triggers
         leftMotor.setPower(left);
         rightMotor.setPower(right);
@@ -140,14 +160,14 @@ public class Scratch extends LinearOpMode {
         }
         //move rack downwards
         if(values[5] == 1) {  // right bumper
-            rack.setPower(-100);
+            rack.setPower(-200);
         }
         //stop rack motion
         if(values[12] == 1) {  // left on dpad
-            rack.setPower(0);
+            rack.setPower(-100);
         }
 
-
+        /*
         //turn on grabber
         if(values[6] == 1) {  // button A
             grabber.setPower(100);
@@ -160,8 +180,9 @@ public class Scratch extends LinearOpMode {
         if(values[10] == 1) {  // button right stick
             grabber.setPower(0);
         }
+        */
 
-
+        /*
         //move winch upwards
         if(values[8] == 1) {  // button X
             winch.setPower(100);
@@ -174,6 +195,7 @@ public class Scratch extends LinearOpMode {
         if(values[11] == 1) {  // button left stick
             winch.setPower(0);
         }
+        */
     }
 
 
@@ -181,5 +203,13 @@ public class Scratch extends LinearOpMode {
         updateControllerState();
         setRobotState();
     }
-
+    /*
+    public void stop(){
+        leftMotor.setPower(0);
+        rightMotor.setPower(0);
+        grabber.setPower(0);
+        winch.setPower(0);
+        rack.setPower(0);
+    }
+    */
 }
