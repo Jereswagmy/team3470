@@ -1,0 +1,185 @@
+package org.firstinspires.ftc.teamcode;
+
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.GyroSensor;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
+
+import static org.firstinspires.ftc.robotcore.internal.opmode.OnBotJavaManager.initialize;
+
+@TeleOp(name = "Scratch")
+@Disabled
+
+public class Scratch extends LinearOpMode {
+
+    private DcMotor rightMotor, leftMotor, grabber;
+    private CRServo rack, winch;
+
+    // controller state values
+    float[] values = {
+            0,  //0 Left Stick
+            0,  //1 Right Stick
+            0,  //2 Left Trigger
+            0,  //3 Right Trigger
+            0,  //4 Left Bumper
+            0,  //5 Right Bumper
+            0,  //6 A
+            0,  //7 B
+            0,  //8 X
+            0,  //9 Y
+            0,  //10 right stick button
+            0,  //11 left stick button
+            0,  //12 dpad left
+    };
+
+
+    public void runOpMode() throws InterruptedException {
+        initialize();
+
+        waitForStart();
+        while (opModeIsActive()) {
+            loopCode();
+        }
+    }
+
+
+    public void initialize() throws InterruptedException {
+
+        // name motors
+        rightMotor = hardwareMap.dcMotor.get("right");  // rightMotor named (right)
+        leftMotor = hardwareMap.dcMotor.get("left");   // leftMotor named (left)
+        grabber = hardwareMap.dcMotor.get("grabber");   // end effector motor named (grabber)
+        rightMotor.setPower(0);
+        leftMotor.setPower(0);
+        grabber.setPower(0);
+
+        // name servos
+        winch = hardwareMap.crservo.get("winch");
+        rack = hardwareMap.crservo.get("rack");
+
+
+    }
+
+    public void updateControllerState() {
+        values[0] = gamepad1.left_stick_x;
+        values[1] = gamepad1.right_stick_x;
+        values[2] = gamepad1.left_trigger;
+        values[3] = gamepad1.right_trigger;
+        values[4] = convertBoolean(gamepad1.left_bumper);
+        values[5] = convertBoolean(gamepad1.right_bumper);
+        values[6] = convertBoolean(gamepad1.a);
+        values[7] = convertBoolean(gamepad1.b);
+        values[8] = convertBoolean(gamepad1.x);
+        values[9] = convertBoolean(gamepad1.y);
+        values[10] = convertBoolean(gamepad1.right_stick_button);
+        values[11] = convertBoolean(gamepad1.left_stick_button);
+        values[12] = convertBoolean(gamepad1.dpad_left);
+    }
+
+    // Converts booleans to floats (true = 1, false = 0)
+    public float convertBoolean(boolean x){
+        if(x)
+            return 1;
+        else
+            return 0;
+    }
+
+    public void setRobotState() {
+        // Prep for setting motor powers (left, right)
+        float left = 0;
+        float right = 0;
+
+        // if turning right
+        if (values[0] > 0.1) {
+            // if right trigger pressed then subtract turning ratio from adjacent side
+            if (values[3] > 0.1) {
+                right = values[3] - Math.abs(values[0]);
+                left = values[3];
+            } else
+                // if left trigger pressed
+                if (values[2] > 0.1) {
+                    right = values[2] - Math.abs(values[0]);
+                    left = values[2];
+                } else {
+                // if turning in place
+                    left = Math.abs(values[0]);
+                    right = -Math.abs(values[0]);
+                }
+        }
+        // if turning left
+        if (values[0] < 0.1) {
+            // if right trigger pressed then subtract turning ratio from adjacent side
+            if (values[3] > 0.1) {
+                left = values[3] - Math.abs(values[0]);
+                right = values[3];
+            } else
+                // if left trigger pressed
+                if (values[2] > 0.1) {
+                    left = values[2] - Math.abs(values[0]);
+                    right = values[2];
+                } else {
+                // if turning in place
+                    right = Math.abs(values[0]);
+                    left = -Math.abs(values[0]);
+                }
+        }
+        // Set motor powers according to current state of joysticks and triggers
+        leftMotor.setPower(left);
+        rightMotor.setPower(right);
+
+
+        //move rack upwards
+        if(values[4] == 1) {  // left bumper
+            rack.setPower(100);
+        }
+        //move rack downwards
+        if(values[5] == 1) {  // right bumper
+            rack.setPower(-100);
+        }
+        //stop rack motion
+        if(values[12] == 1) {  // left on dpad
+            rack.setPower(0);
+        }
+
+
+        //turn on grabber
+        if(values[6] == 1) {  // button A
+            grabber.setPower(100);
+        }
+        //reverse grabber slowly (25% forward speed)
+        if(values[7] == 1) {  // button B
+            grabber.setPower(-25);
+        }
+        // turn off grabber
+        if(values[10] == 1) {  // button right stick
+            grabber.setPower(0);
+        }
+
+
+        //move winch upwards
+        if(values[8] == 1) {  // button X
+            winch.setPower(100);
+        }
+        //move winch downwards
+        if(values[9] == 1) {  // button Y
+            winch.setPower(-100);
+        }
+        //stop winch
+        if(values[11] == 1) {  // button left stick
+            winch.setPower(0);
+        }
+    }
+
+
+    public void loopCode() {
+        updateControllerState();
+        setRobotState();
+    }
+
+}
