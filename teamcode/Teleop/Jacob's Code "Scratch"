@@ -3,13 +3,9 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
 import static org.firstinspires.ftc.robotcore.internal.opmode.OnBotJavaManager.initialize;
 
@@ -21,7 +17,7 @@ public class Scratch extends LinearOpMode {
     private DcMotor rightMotor, leftMotor, grabber = null;
     private CRServo rack, winch;
 
-    // controller state values
+    // controls stored in the (values) array
     double[] values = {
             0,  //0 Left Stick
             0,  //1 Right Stick
@@ -153,17 +149,17 @@ public class Scratch extends LinearOpMode {
         leftMotor.setPower(left);
         rightMotor.setPower(right);
 
-
-        //move rack upwards
-        if(values[4] == 1) {  // left bumper
+        
+        //hold to move rack upwards
+        if (values[4] == 1) {  // left bumper
             rack.setPower(100);
         }
-        //move rack downwards
-        if(values[5] == 1) {  // right bumper
-            rack.setPower(-200);
+        //hold to move rack downwards
+        if (values[5] == 1) {  // right bumper
+            rack.setPower(-200); 
         }
-        //stop rack motion
-        if(values[12] == 1) {  // left on dpad
+        //idle to stop rack motion
+        if ((values[4] == 0) && (values[5] == 0)) {
             rack.setPower(-100);
         }
 
@@ -203,13 +199,4 @@ public class Scratch extends LinearOpMode {
         updateControllerState();
         setRobotState();
     }
-    /*
-    public void stop(){
-        leftMotor.setPower(0);
-        rightMotor.setPower(0);
-        grabber.setPower(0);
-        winch.setPower(0);
-        rack.setPower(0);
-    }
-    */
 }
