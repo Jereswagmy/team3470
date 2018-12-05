@@ -17,7 +17,7 @@ public class Scratch extends LinearOpMode {
     private DcMotor rightMotor, leftMotor, grabber = null;
     private CRServo rack, winch;
 
-    // controls stored in the (values) array
+    // controller state values
     double[] values = {
             0,  //0 Left Stick
             0,  //1 Right Stick
@@ -86,7 +86,7 @@ public class Scratch extends LinearOpMode {
         else
             return 0;
     }
-
+    //controls are set here and algorithms for those controls
     public void setRobotState() {
         // Prep for setting motor powers (left, right)
         double left = 0;
@@ -149,14 +149,14 @@ public class Scratch extends LinearOpMode {
         leftMotor.setPower(left);
         rightMotor.setPower(right);
 
-        
+
         //hold to move rack upwards
         if (values[4] == 1) {  // left bumper
             rack.setPower(100);
         }
         //hold to move rack downwards
         if (values[5] == 1) {  // right bumper
-            rack.setPower(-200); 
+            rack.setPower(-200);
         }
         //idle to stop rack motion
         if ((values[4] == 0) && (values[5] == 0)) {
